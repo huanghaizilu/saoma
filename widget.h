@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QSqlTableModel>
+#include <QListWidgetItem>
 
 namespace Ui {
 class Widget;
@@ -79,13 +80,13 @@ private slots:
 
     void on_printTableWidgetPButton_clicked();
 
-    void on_searchPButton_stock_clicked();
-
-//    void on_clear_PButton_clicked();
-
     void on_clear_sta_PButton_clicked();
 
     void on_search_PButton_alart_clicked();
+
+    void on_searchPButton_clicked();
+
+    void on_listWidget_itemDoubleClicked(QListWidgetItem *item);
 
 private:
     Ui::Widget *ui;

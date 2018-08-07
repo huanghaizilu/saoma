@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
         QFile styleFile(":/ui.qss");
         styleFile.open(QIODevice::ReadOnly);
         QString setStyleSheet(styleFile.readAll());
+
         a.setStyleSheet(setStyleSheet);
 
     return a.exec();

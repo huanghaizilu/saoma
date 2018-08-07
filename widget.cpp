@@ -66,8 +66,8 @@ Widget::Widget(QWidget *parent) :
 
     ui->tableWidget_stock->setColumnCount(7);
     ui->tableWidget_stock->setRowCount(0);
-    ui->tableWidget_stock->setColumnWidth(0,200);
-    ui->tableWidget_stock->setColumnWidth(6,200);
+    ui->tableWidget_stock->setColumnWidth(0,160);
+    ui->tableWidget_stock->setColumnWidth(6,160);
     ui->tableWidget_stock->setHorizontalHeaderLabels(QStringList()<<"StockID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
     ui->tableWidget_stock->setSelectionBehavior(QAbstractItemView::SelectRows);  //整行选中的方式
     ui->tableWidget_stock->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
@@ -84,9 +84,9 @@ Widget::Widget(QWidget *parent) :
 
     ui->tableWidget_search->setColumnCount(7);
     ui->tableWidget_search->setRowCount(0);
-    ui->tableWidget_search->setColumnWidth(0,200);
-    ui->tableWidget_search->setColumnWidth(6,200);
-    ui->tableWidget_search->setHorizontalHeaderLabels(QStringList()<<"StockID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
+    ui->tableWidget_search->setColumnWidth(0,160);
+    ui->tableWidget_search->setColumnWidth(6,160);
+    ui->tableWidget_search->setHorizontalHeaderLabels(QStringList()<<"表单ID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
     ui->tableWidget_search->setSelectionBehavior(QAbstractItemView::SelectRows);  //整行选中的方式
     ui->tableWidget_search->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
 
@@ -470,7 +470,7 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
               ui->lineEdit_export->setText("");
         }
     }
-    if(ui->tabWidget->currentIndex()==4)
+    if(ui->tabWidget->currentIndex()==5)
     {
     if((event->key() == Qt::Key_Return)||(event->key() == Qt::Key_Enter))
     {
@@ -523,7 +523,7 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
     }
     }
     }
-    if(ui->tabWidget->currentIndex()==5)
+    if(ui->tabWidget->currentIndex()==2)
     {
     if((event->key() == Qt::Key_Return)||(event->key() == Qt::Key_Enter))
        {
@@ -632,6 +632,7 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
               }
           }
           ui->lineEdit_ID->setText("");
+
     }
     }
 }
@@ -1473,8 +1474,35 @@ void Widget::on_commitPButton_stock_clicked()
     ui->lineEdit_ID->setText("");
     ui->lineEdit_ID->setFocus();
 
-    int stockNumber = ui->spinBox->value() + 1;
-    ui->spinBox->setValue(stockNumber);
+    QString stock,stock1,stock2,stock3;
+    stock1 = "S";//means stock
+    stock2 = QDate::currentDate().toString("yyyy-MM-dd");
+    QString buling = "0";
+    int stockNumber = ui->spinBox->value();
+    if((0<stockNumber)&&(stockNumber<10))
+    {
+    stock3 = buling + buling + QString::number(stockNumber,10);
+    } else if(((9<stockNumber)&&(stockNumber<100)))
+    {
+    stock3 = buling + QString::number(stockNumber,10);
+    }else  {
+    stock3 = QString::number(stockNumber,10);
+    }
+    stock = stock1 + stock2 + stock3 ;
+    qDebug() << "stock" <<stock;
+    QString sql_insert1;
+    sql_insert1 = "insert into stockSheet values (?)";
+    QSqlQuery query;
+    query.prepare(sql_insert1);
+    query.addBindValue(stock);
+    if(!query.exec())
+    {
+        qDebug() << query.lastError();
+    }
+
+    int stockNumber1 = ui->spinBox->value() + 1;
+    ui->spinBox->setValue(stockNumber1);
+
 }
 
 void Widget::on_printPButton_stock_clicked()
@@ -1527,61 +1555,6 @@ void Widget::on_printTableWidgetPButton_clicked()
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(fileName);
         ui->tableWidget_stock->render(&printer);
-    }
-}
-
-void Widget::on_searchPButton_stock_clicked()
-{
-    ui->tableWidget_search->clear();
-    ui->tableWidget_search->setRowCount(0);
-    ui->tableWidget_search->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    ui->tableWidget_search->setHorizontalHeaderLabels(QStringList()<<"StockID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
-
-    QString stock,stock1,stock2,stock3;
-    stock1 = "S";//means stock
-//    stock2 = ui->search_dateEdit.toString("yyyy-MM-dd");
-    stock2 = ui->search_dateEdit->text();
-    qDebug() <<stock2;
-    QString buling = "0";
-    int stockNumber = ui->search_spinBox->value();
-    if((0<stockNumber)&&(stockNumber<10))
-    {
-    stock3 = buling + buling + QString::number(stockNumber,10);
-    } else if(((9<stockNumber)&&(stockNumber<100)))
-    {
-    stock3 = buling + QString::number(stockNumber,10);
-    }else  {
-    stock3 = QString::number(stockNumber,10);
-    }
-    stock = stock1 + stock2 +stock3 + "%";
-    qDebug() <<"stock" <<stock;
-
-//    QString sql_search = "select * from stock where stockId like '" + stock + "%'";
-        QString sql_search = "select * from stock where stockId like :stock ";
-    qDebug() << sql_search;
-    QSqlQuery query ;
-    query.prepare(sql_search);
-    query. addBindValue(stock);
-    if(!query.exec())
-    {
-        query.lastError();
-    }
-    qDebug() << query.first();
-    query.last();
-
-    int i = 0, j = 0, iColumn, iRow;
-    iRow = query.at() + 1;
-    qDebug() <<"iRow" <<iRow;
-    ui->tableWidget_search->setRowCount(iRow);
-    iColumn = ui->tableWidget_search->columnCount();
-    qDebug() <<"iColumn" <<iColumn;
-    query.first();
-    while(i<iRow)
-    {
-    for (j = 0; j<iColumn; j++)
-    ui->tableWidget_search->setItem(i, j, new QTableWidgetItem(query.value(j).toString()));
-    i++;
-    query.next();
     }
 }
 
@@ -1657,4 +1630,65 @@ void Widget::on_search_PButton_alart_clicked()
     QString str_maxNumber = query.value(2).toString();
     ui->tableWidget_alart->setItem(rowNum,6,new QTableWidgetItem(str_minNumber));
     ui->tableWidget_alart->setItem(rowNum,7,new QTableWidgetItem(str_maxNumber));
+}
+
+void Widget::on_searchPButton_clicked()
+{
+    ui->listWidget->clear();
+
+    QString stock,stock1,stock2;
+    stock1 = "S";//means stock
+    stock2 = ui->search_dateEdit->text();
+    qDebug() <<stock2;
+    stock = stock1 + stock2 + "%";
+    qDebug() <<"stock" <<stock;
+
+    QString sql_search = "select * from stockSheet where stockSheetId like :stock ";
+    qDebug() << sql_search;
+    QSqlQuery query ;
+    query.prepare(sql_search);
+    query. addBindValue(stock);
+    if(!query.exec())
+    {
+        query.lastError();
+    }
+
+    while (query.next())
+    {
+        ui->listWidget->addItem(query.value(0).toString());
+    }
+}
+
+void Widget::on_listWidget_itemDoubleClicked(QListWidgetItem *item)
+{
+    ui->tableWidget_search->clear();
+    ui->tableWidget_search->setRowCount(0);
+    ui->tableWidget_search->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    ui->tableWidget_search->setHorizontalHeaderLabels(QStringList()<<"StockID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
+
+//    QString stock = ui->listWidget->currentItem()->text();
+    QString stock = ui->listWidget->currentItem()->text();
+    stock = stock + "%";
+    QString sql_search = "select * from stock where stockId like :stock ";
+    QSqlQuery query ;
+    query.prepare(sql_search);
+    query. addBindValue(stock);
+    if(!query.exec())
+    {
+        query.lastError();
+    }
+    query.last();
+
+    int i = 0, j = 0, iColumn, iRow;
+    iRow = query.at() + 1;
+    ui->tableWidget_search->setRowCount(iRow);
+    iColumn = ui->tableWidget_search->columnCount();
+    query.first();
+    while(i<iRow)
+    {
+    for (j = 0; j<iColumn; j++)
+    ui->tableWidget_search->setItem(i, j, new QTableWidgetItem(query.value(j).toString()));
+    i++;
+    query.next();
+    }
 }

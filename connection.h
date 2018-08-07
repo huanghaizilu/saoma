@@ -47,6 +47,10 @@ bool createConnection()
     query.exec(QString("create table number (id varchar primary key,minNumber int,maxNumber int)"));
     query.exec(QString("insert into number values(1,9,99)"));
 
+    query.exec(QString("create table stockSheet (stockSheetId  varchar primary key)"));
+    query.exec(QString("create table importSheet(importSheetId varchar primary key)"));
+    query.exec(QString("create table exportSheet(exportSheetId varchar primary key)"));
+
     return true;
 }
 
