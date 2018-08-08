@@ -40,19 +40,19 @@ Widget::Widget(QWidget *parent) :
     ui->tableWidget_table->setSelectionBehavior(QAbstractItemView::SelectRows);  //整行选中的方式
     ui->tableWidget_table->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
 
-    ui->tableWidget_import->setColumnCount(6);
+    ui->tableWidget_import->setColumnCount(7);
     ui->tableWidget_import->setRowCount(0);
-    ui->tableWidget_import->setColumnWidth(0,200);
-    ui->tableWidget_import->setColumnWidth(5,200);
-    ui->tableWidget_import->setHorizontalHeaderLabels(QStringList()<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
+    ui->tableWidget_import->setColumnWidth(0,160);
+    ui->tableWidget_import->setColumnWidth(6,160);
+    ui->tableWidget_import->setHorizontalHeaderLabels(QStringList()<<"ImportID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
     ui->tableWidget_import->setSelectionBehavior(QAbstractItemView::SelectRows);  //整行选中的方式
     ui->tableWidget_import->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
 
-    ui->tableWidget_export->setColumnCount(6);
+    ui->tableWidget_export->setColumnCount(7);
     ui->tableWidget_export->setRowCount(0);
-    ui->tableWidget_export->setColumnWidth(0,200);
-    ui->tableWidget_export->setColumnWidth(5,200);
-    ui->tableWidget_export->setHorizontalHeaderLabels(QStringList()<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
+    ui->tableWidget_export->setColumnWidth(0,160);
+    ui->tableWidget_export->setColumnWidth(6,160);
+    ui->tableWidget_export->setHorizontalHeaderLabels(QStringList()<<"ExportID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
     ui->tableWidget_export->setSelectionBehavior(QAbstractItemView::SelectRows);  //整行选中的方式
     ui->tableWidget_export->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
 
@@ -91,8 +91,12 @@ Widget::Widget(QWidget *parent) :
     ui->tableWidget_search->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
 
 
-    ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
     ui->search_dateEdit->setDate(QDate::currentDate());
+
+    ui->dateTimeEdit->setDateTime(QDateTime::currentDateTime());
+    ui->dateTimeEdit_2->setDateTime(QDateTime::currentDateTime());
+    ui->dateTimeEdit_3->setDateTime(QDateTime::currentDateTime());
+
     int stockNumber;
     QString sql_select = "select * from stock ";
     QSqlQuery query ;
@@ -116,6 +120,54 @@ Widget::Widget(QWidget *parent) :
     else
     {   stockNumber = 1;
         ui->spinBox->setValue(stockNumber);
+    }
+
+    int exportNumber;
+     sql_select = "select * from export ";
+    query.prepare(sql_select);
+    if(!query.exec())
+    {
+        qDebug() << query.lastError();
+    }
+    qDebug() << query.last();
+    if(query.last())
+    {
+        QString   exportDate = query.value(6).toString().mid(0,10);
+        if(exportDate == QDate::currentDate().toString("yyyy-MM-dd"))
+        {
+            QString exportId = query.value(0).toString();
+            exportNumber  = exportId.mid(11,3).toInt();
+            qDebug() <<"exportNumber" <<exportNumber;
+            ui->spinBox_2->setValue(exportNumber + 1);
+        }
+    }
+    else
+    {   exportNumber = 1;
+        ui->spinBox_2->setValue(exportNumber);
+    }
+
+    int importNumber;
+     sql_select = "select * from import ";
+    query.prepare(sql_select);
+    if(!query.exec())
+    {
+        qDebug() << query.lastError();
+    }
+    qDebug() << query.last();
+    if(query.last())
+    {
+        QString   importDate = query.value(6).toString().mid(0,10);
+        if(importDate == QDate::currentDate().toString("yyyy-MM-dd"))
+        {
+            QString importId = query.value(0).toString();
+            importNumber  = importId.mid(11,3).toInt();
+            qDebug() <<"importNumber" <<importNumber;
+            ui->spinBox_3->setValue(importNumber + 1);
+        }
+    }
+    else
+    {   importNumber = 1;
+        ui->spinBox_3->setValue(importNumber);
     }
 }
 
@@ -353,13 +405,48 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
 //              ui->lineEdit_import->setText("");
 //              return;
 //          }
+          QString import,import1,import2,import3,import4;
+          import1 = "I";//means import
+          import2 = QDate::currentDate().toString("yyyy-MM-dd");
+//          import3 = "xxx";//999条表单
+//          import3 = ui->lineEdit_number->text();
+          QString buling = "0";
+          int importNumber = ui->spinBox_3->value();
+          if((0<importNumber)&&(importNumber<10))
+          {
+          import3 = buling + buling + QString::number(importNumber,10);
+          } else if(((9<importNumber)&&(importNumber<100)))
+          {
+          import3 = buling + QString::number(importNumber,10);
+          }else  {
+          import3 = QString::number(importNumber,10);
+          }
 
+          int importListnumber = ui->tableWidget_import->rowCount() + 1;
+          if((0<importListnumber)&&(importListnumber<10))
+          {
+          import4 = buling + buling + buling + buling + QString::number(importListnumber,10);
+          }else if(((9<importListnumber)&&(importListnumber<100)))
+          {
+          import4 = buling + buling + buling + QString::number(importListnumber,10);
+          }else if(((99<importListnumber)&&(importListnumber<1000))){
+          import4 = buling + buling + QString::number(importListnumber,10);
+          }else if(((999<importListnumber)&&(importListnumber<10000))){
+              import4 = buling + QString::number(importListnumber,10);
+          }else if(((9999<importListnumber)&&(importListnumber<100000))){
+              import4 = QString::number(importListnumber,10);
+          }
+//          import4 = "xxxxx";//99999记录
+          import = import1 +import2 +import3 + import4;
+
+          QTableWidgetItem *importId    = new QTableWidgetItem();
           QTableWidgetItem *id          = new QTableWidgetItem();
           QTableWidgetItem *name        = new QTableWidgetItem();
           QTableWidgetItem *kind        = new QTableWidgetItem();
           QTableWidgetItem *number      = new QTableWidgetItem();
           QTableWidgetItem *unit        = new QTableWidgetItem();
           QTableWidgetItem *dateTime    = new QTableWidgetItem();
+          importId->setText(import);
           id->setText(str_id);
           name->setText(name1);
           kind->setText(kind1);
@@ -368,25 +455,26 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
           QString strDateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss zzz");
           dateTime->setText(strDateTime);
           ui->tableWidget_import->insertRow(rowNum);
-          ui->tableWidget_import->setItem(rowNum,0,id);
-          ui->tableWidget_import->setItem(rowNum,1,name);
-          ui->tableWidget_import->setItem(rowNum,2,kind);
-          ui->tableWidget_import->setItem(rowNum,3,number);
-          ui->tableWidget_import->setItem(rowNum,4,unit);
-          ui->tableWidget_import->setItem(rowNum,5,dateTime);
+          ui->tableWidget_import->setItem(rowNum,0,importId);
+          ui->tableWidget_import->setItem(rowNum,1,id);
+          ui->tableWidget_import->setItem(rowNum,2,name);
+          ui->tableWidget_import->setItem(rowNum,3,kind);
+          ui->tableWidget_import->setItem(rowNum,4,number);
+          ui->tableWidget_import->setItem(rowNum,5,unit);
+          ui->tableWidget_import->setItem(rowNum,6,dateTime);
 
           int rowNum1 = ui->tableWidget_import->rowCount();
           for(int i=0;i<rowNum1-1;i++)
           {
-              if(ui->lineEdit_import->text() == ui->tableWidget_import->item(i,0)->text() )
+              if(ui->lineEdit_import->text() == ui->tableWidget_import->item(i,1)->text() )
               {
                 qDebug() <<"import has same record!";
-                int n = ui->tableWidget_import->item(i,3)->text().toInt();
+                int n = ui->tableWidget_import->item(i,4)->text().toInt();
                 n= n + 1;
                 QString str_n = QString::number(n,10);
                 QTableWidgetItem *number1 = new QTableWidgetItem();
                 number1->setText(str_n);
-                ui->tableWidget_import->setItem(i,3,number1);
+                ui->tableWidget_import->setItem(i,4,number1);
                 int rowNum2 = ui->tableWidget_import->rowCount();
                 ui->tableWidget_import->removeRow(rowNum2-1);
                 break;
@@ -414,7 +502,7 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
               query.first();
 
               QString name1 = query.value(1).toString();
-              qDebug() <<"name1 import" <<name1;
+              qDebug() <<"name1 export" <<name1;
               if(name1 == "")
               {
                   ui->lineEdit_export->setText("");
@@ -422,19 +510,55 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
               }
 
               QString kind1 = query.value(2).toString();
-              qDebug() <<"kind1 import" <<kind1;
-//              if(kind1 == "")
-//              {
-//                  ui->lineEdit_import->setText("");
-//                  return;
-//              }
+              qDebug() <<"kind1 export" <<kind1;
+              if(kind1 == "")
+              {
+//                  ui->lineEdit_export->setText("");
+                  return;
+              }
+              QString export0,export1,export2,export3,export4;
+              export1 = "E";//means export
+              export2 = QDate::currentDate().toString("yyyy-MM-dd");
+    //          export3 = "xxx";//999条表单
+    //          export3 = ui->lineEdit_number->text();
+              QString buling = "0";
+              int exportNumber = ui->spinBox_2->value();
+              if((0<exportNumber)&&(exportNumber<10))
+              {
+              export3 = buling + buling + QString::number(exportNumber,10);
+              } else if(((9<exportNumber)&&(exportNumber<100)))
+              {
+              export3 = buling + QString::number(exportNumber,10);
+              }else  {
+              export3 = QString::number(exportNumber,10);
+              }
 
+              int exportListnumber = ui->tableWidget_export->rowCount() + 1;
+              if((0<exportListnumber)&&(exportListnumber<10))
+              {
+              export4 = buling + buling + buling + buling + QString::number(exportListnumber,10);
+              }else if(((9<exportListnumber)&&(exportListnumber<100)))
+              {
+              export4 = buling + buling + buling + QString::number(exportListnumber,10);
+              }else if(((99<exportListnumber)&&(exportListnumber<1000))){
+              export4 = buling + buling + QString::number(exportListnumber,10);
+              }else if(((999<exportListnumber)&&(exportListnumber<10000))){
+                  export4 = buling + QString::number(exportListnumber,10);
+              }else if(((9999<exportListnumber)&&(exportListnumber<100000))){
+                  export4 = QString::number(exportListnumber,10);
+              }
+    //          export4 = "xxxxx";//99999记录
+              export0 = export1 +export2 +export3 + export4;
+
+              QTableWidgetItem *exportId    = new QTableWidgetItem();
               QTableWidgetItem *id          = new QTableWidgetItem();
               QTableWidgetItem *name        = new QTableWidgetItem();
               QTableWidgetItem *kind        = new QTableWidgetItem();
               QTableWidgetItem *number      = new QTableWidgetItem();
               QTableWidgetItem *unit        = new QTableWidgetItem();
               QTableWidgetItem *dateTime    = new QTableWidgetItem();
+
+              exportId->setText(export0);
               id->setText(str_id);
               name->setText(name1);
               kind->setText(kind1);
@@ -443,25 +567,26 @@ void Widget::keyReleaseEvent(QKeyEvent *event)
               QString strDateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss zzz");
               dateTime->setText(strDateTime);
               ui->tableWidget_export->insertRow(rowNum);
-              ui->tableWidget_export->setItem(rowNum,0,id);
-              ui->tableWidget_export->setItem(rowNum,1,name);
-              ui->tableWidget_export->setItem(rowNum,2,kind);
-              ui->tableWidget_export->setItem(rowNum,3,number);
-              ui->tableWidget_export->setItem(rowNum,4,unit);
-              ui->tableWidget_export->setItem(rowNum,5,dateTime);
+              ui->tableWidget_export->setItem(rowNum,0,exportId);
+              ui->tableWidget_export->setItem(rowNum,1,id);
+              ui->tableWidget_export->setItem(rowNum,2,name);
+              ui->tableWidget_export->setItem(rowNum,3,kind);
+              ui->tableWidget_export->setItem(rowNum,4,number);
+              ui->tableWidget_export->setItem(rowNum,5,unit);
+              ui->tableWidget_export->setItem(rowNum,6,dateTime);
 
               int rowNum1 = ui->tableWidget_export->rowCount();
               for(int i=0;i<rowNum1-1;i++)
               {
-                  if(ui->lineEdit_export->text() == ui->tableWidget_export->item(i,0)->text() )
+                  if(ui->lineEdit_export->text() == ui->tableWidget_export->item(i,1)->text() )
                   {
-                    qDebug() <<"import has same record!";
-                    int n = ui->tableWidget_export->item(i,3)->text().toInt();
+                    qDebug() <<"export has same record!";
+                    int n = ui->tableWidget_export->item(i,4)->text().toInt();
                     n= n + 1;
                     QString str_n = QString::number(n,10);
                     QTableWidgetItem *number1 = new QTableWidgetItem();
                     number1->setText(str_n);
-                    ui->tableWidget_export->setItem(i,3,number1);
+                    ui->tableWidget_export->setItem(i,4,number1);
                     int rowNum2 = ui->tableWidget_export->rowCount();
                     ui->tableWidget_export->removeRow(rowNum2-1);
                     break;
@@ -684,19 +809,20 @@ void Widget::on_commitPButton_import_clicked()
     for(int i=0;i<rowNum;i++)
     {
         int     id,number;
-        QString name,kind,unit,strDateTime;
-
-        id          = ui->tableWidget_import->item(i,0)->text().toInt();
-        name        = ui->tableWidget_import->item(i,1)->text();
-        kind        = ui->tableWidget_import->item(i,2)->text();
-        number      = ui->tableWidget_import->item(i,3)->text().toInt();
-        unit        = ui->tableWidget_import->item(i,4)->text();
-        strDateTime = ui->tableWidget_import->item(i,5)->text();
+        QString importId,name,kind,unit,strDateTime;
+        importId    = ui->tableWidget_import->item(i,0)->text();
+        id          = ui->tableWidget_import->item(i,1)->text().toInt();
+        name        = ui->tableWidget_import->item(i,2)->text();
+        kind        = ui->tableWidget_import->item(i,3)->text();
+        number      = ui->tableWidget_import->item(i,4)->text().toInt();
+        unit        = ui->tableWidget_import->item(i,5)->text();
+        strDateTime = ui->tableWidget_import->item(i,6)->text();
 
         QString sql_insert;
-        sql_insert = "insert into import values (?,?,?,?,?,?)";
+        sql_insert = "insert into import values (?,?,?,?,?,?,?)";
         QSqlQuery query;
         query.prepare(sql_insert);
+        query.addBindValue(importId);
         query.addBindValue(id);
         query.addBindValue(name);
         query.addBindValue(kind);
@@ -706,14 +832,43 @@ void Widget::on_commitPButton_import_clicked()
         if(!query.exec())
         {
             qDebug() << query.lastError();
-        }
+                    }
     }
 
     ui->tableWidget_import->clear();
     ui->tableWidget_import->setRowCount(0);
-    ui->tableWidget_import->setHorizontalHeaderLabels(QStringList()<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
+    ui->tableWidget_import->setHorizontalHeaderLabels(QStringList()<<"ImportID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
     ui->tableWidget_import->setSelectionBehavior(QAbstractItemView::SelectRows);  //整行选中的方式
     ui->tableWidget_import->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
+
+    QString import,import1,import2,import3;
+    import1 = "S";//means import
+    import2 = QDate::currentDate().toString("yyyy-MM-dd");
+    QString buling = "0";
+    int importNumber = ui->spinBox_3->value();
+    if((0<importNumber)&&(importNumber<10))
+    {
+    import3 = buling + buling + QString::number(importNumber,10);
+    } else if(((9<importNumber)&&(importNumber<100)))
+    {
+    import3 = buling + QString::number(importNumber,10);
+    }else  {
+    import3 = QString::number(importNumber,10);
+    }
+    import = import1 + import2 + import3 ;
+    qDebug() << "import" <<import;
+    QString sql_insert1;
+    sql_insert1 = "insert into importSheet values (?)";
+    QSqlQuery query;
+    query.prepare(sql_insert1);
+    query.addBindValue(import);
+    if(!query.exec())
+    {
+        qDebug() << query.lastError();
+    }
+
+    int importNumber1 = ui->spinBox_3->value() + 1;
+    ui->spinBox_3->setValue(importNumber1);
 }
 
 void Widget::on_addPButton_export_clicked()
@@ -793,23 +948,26 @@ void Widget::on_commitPButton_export_clicked()
 {
     ui->tableWidget_export->setEditTriggers(QAbstractItemView::DoubleClicked);
     int rowNum = ui->tableWidget_export->rowCount();
-
+    qDebug() <<"rowNum" <<rowNum;
     if(rowNum == 0) return;
     for(int i=0;i<rowNum;i++)
     {
         int     id,number;
-        QString name,kind,unit,strDateTime;
-        id          = ui->tableWidget_export->item(i,0)->text().toInt();
-        name        = ui->tableWidget_export->item(i,1)->text();
-        kind        = ui->tableWidget_export->item(i,2)->text();
-        number      = ui->tableWidget_export->item(i,3)->text().toInt();
-        unit        = ui->tableWidget_export->item(i,4)->text();
-        strDateTime = ui->tableWidget_export->item(i,5)->text();
+        QString exportId,name,kind,unit,strDateTime;
+        exportId    = ui->tableWidget_export->item(i,0)->text();
+        id          = ui->tableWidget_export->item(i,1)->text().toInt();
+        name        = ui->tableWidget_export->item(i,2)->text();
+        kind        = ui->tableWidget_export->item(i,3)->text();
+        number      = ui->tableWidget_export->item(i,4)->text().toInt();
+        unit        = ui->tableWidget_export->item(i,5)->text();
+        strDateTime = ui->tableWidget_export->item(i,6)->text();
 
         QString sql_insert;
-        sql_insert = "insert into export values (?,?,?,?,?,?)";
+        sql_insert = "insert into export values (?,?,?,?,?,?,?)";
+        qDebug() << sql_insert;
         QSqlQuery query;
         query.prepare(sql_insert);
+        query.addBindValue(exportId);
         query.addBindValue(id);
         query.addBindValue(name);
         query.addBindValue(kind);
@@ -823,9 +981,38 @@ void Widget::on_commitPButton_export_clicked()
     }
     ui->tableWidget_export->clear();
     ui->tableWidget_export->setRowCount(0);
-    ui->tableWidget_export->setHorizontalHeaderLabels(QStringList()<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
+    ui->tableWidget_export->setHorizontalHeaderLabels(QStringList()<<"ExportID"<<"ID"<<"名称"<<"种类"<<"数量"<<"单位"<<"日期和时间");
     ui->tableWidget_export->setSelectionBehavior(QAbstractItemView::SelectRows);  //整行选中的方式
     ui->tableWidget_export->setSelectionMode(QAbstractItemView::SingleSelection);  //设置为可以选中单个
+
+    QString export0,export1,export2,export3;
+    export0 = "E";//means export
+    export2 = QDate::currentDate().toString("yyyy-MM-dd");
+    QString buling = "0";
+    int exportNumber = ui->spinBox_2->value();
+    if((0<exportNumber)&&(exportNumber<10))
+    {
+    export3 = buling + buling + QString::number(exportNumber,10);
+    } else if(((9<exportNumber)&&(exportNumber<100)))
+    {
+    export3 = buling + QString::number(exportNumber,10);
+    }else  {
+    export3 = QString::number(exportNumber,10);
+    }
+    export0 = export1 + export2 + export3 ;
+    qDebug() << "export0" <<export0;
+    QString sql_insert1;
+    sql_insert1 = "insert into exportSheet values (?)";
+    QSqlQuery query;
+    query.prepare(sql_insert1);
+    query.addBindValue(export0);
+    if(!query.exec())
+    {
+        qDebug() << query.lastError();
+    }
+
+    int exportNumber1 = ui->spinBox_2->value() + 1;
+    ui->spinBox_2->setValue(exportNumber1);
 }
 
 void Widget::on_import_day_PButton_clicked()
